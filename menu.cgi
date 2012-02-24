@@ -28,6 +28,7 @@ use File::Find;
 use IO::String;
 use YAML;
 use Safe;
+use Cwd qw(realpath);
 use CGI::Simple;
 use Text::ScriptTemplate;
 use strict;
@@ -141,11 +142,11 @@ sub genmenu {
     print loadmenu($cgi, [], $path);
 }
 
-=item genlist($cgi, $path);
+=item genlist($cgi, $path, $%hint);
 Generates and returns folder index in a form of syslinux menu to a browser.
 =cut
 sub genlist {
-    my($cgi, $path) = @_;
+    my($cgi, $path, %hint) = @_;
 
     my $mcgi = $CONFIG->{CGI_URI} || self_uri();
     my @file = DirHandle->new($path)->read;
@@ -154,6 +155,7 @@ sub genlist {
     foreach my $name (@file) {
 	next if $name =~ /^\./;
         my $item = {
+	    hint => { %hint }, # create copy
             name => $name,
             path => "$path/$name",
             base => $path,
@@ -286,7 +288,21 @@ eval {
         if $path =~ m|^/| or $path =~ /\.\./ or $path =~ /[[:cntrl:]]/;
 
     if (-d $path) {
-        genlist($cgi, $path);
+	# hack for nfsroot+aufs
+	if (-d "$path/rw" && -l "$path/ro" && -d "$path/ro/boot") {
+	    my $here = realpath(".");
+	    my $real = realpath("$path/ro") . "/boot";
+            $real =~ s|^$here/?||;
+	    genlist($cgi, $real, aufs => $path);
+	}
+	# hack for nfsroot
+	elsif (-d "$path/boot" && -d "$path/sbin") {
+	    my $real = "$path/boot";
+	    genlist($cgi, $real);
+	}
+	else {
+	    genlist($cgi, $path);
+	}
     }
     elsif (is_menu($path)) {
         genmenu($cgi, $path);
