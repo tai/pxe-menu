@@ -18,7 +18,7 @@
 # - http://host/boot/m.cgi?q=m,debian,+and+m,sid,
 # - http://host/boot/m.cgi?q=freebsd/pxeboot;r=s,/pxeroot,/n/fb70a,
 #
-# Author: Taisuke Yamada <tai+syslinux@remove-this-if-not-spam.cc.rakugaki.org>
+# Author: Taisuke Yamada <tai+syslinux@nospam.cc.rakugaki.org>
 #
 
 use DirHandle;
@@ -153,7 +153,12 @@ sub genlist {
 
     foreach my $name (@file) {
 	next if $name =~ /^\./;
-	my $item = { name => $name, path => "$path/$name" };
+        my $item = {
+            name => $name,
+            path => "$path/$name",
+            base => $path,
+            base_uri => "$mcgi?q=$path",
+        };
 
 	if (-d $item->{path}) {
             $item->{type} = ':dir';
@@ -170,9 +175,8 @@ sub genlist {
 	elsif ($name =~ /^(linux|vmlinux|vmlinuz|bzimage)(-\S+)?$/) {
 	    my $initrd = (grep { -f "$path/$_" && /^initrd.*$2\b/ } @file)[0];
 
-            $item->{type} = ':linux';
-            $item->{uri}  = "$mcgi?q=$item->{path}";
-            $item->{opt}  = "initrd=$mcgi?q=$path/$initrd" if $initrd;
+            $item->{type}   = ':linux';
+            $item->{uri}    = "$mcgi?q=$item->{path}";
             $item->{initrd} = "$mcgi?q=$path/$initrd" if $initrd;
 	}
 	elsif (is_menu($item->{path})) {
