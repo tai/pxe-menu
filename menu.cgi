@@ -1,4 +1,4 @@
-#!/usr/bin/perl -Imenu.d/perl
+#!/usr/bin/perl -Ilib/perl
 # -*- coding: utf-8-unix; mode: perl -*-
 #
 # menu.cgi - syslinux menu generator over HTTP.
