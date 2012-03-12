@@ -277,15 +277,16 @@ sub genscan {
 my $cgi = CGI::Simple->new;
 
 eval {
-    foreach (qw(/etc/syslinux/mcgi.config .mcgi.config)) {
-        do $_ if -f $_; warn $@ if $@;
-    }
     my $path = $cgi->param('q') || ".";
     my $name = basename($path);
 
     # reject suspicous-looking query
     die "Invalid query: $path"
         if $path =~ m|^/| or $path =~ /\.\./ or $path =~ /[[:cntrl:]]/;
+
+    foreach (qw(/etc/syslinux/mcgi.config .mcgi.config $path/.mcgi.config)) {
+        do $_ if -f $_; warn $@ if $@;
+    }
 
     if (-d $path) {
 	# hack for nfsroot+aufs
