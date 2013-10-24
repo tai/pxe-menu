@@ -109,8 +109,8 @@ customization is done by defining certain variables.
 Following is an example of configuration:
 
   # define location of various files
-  $CONFIG->{LIB_URI} = "http://labs.aobac.net/boot/syslinux/lib/";
-  $CONFIG->{CGI_URI} = "http://labs.aobac.net/boot/menu.cgi";
+  $CONFIG->{LIB_URI} = "http://boot/m/syslinux/lib/";
+  $CONFIG->{CGI_URI} = "http://boot/menu.cgi";
   1;
   
   # define template as Perl __DATA__ block

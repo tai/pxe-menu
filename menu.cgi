@@ -358,7 +358,6 @@ label > With menu.cgi, you can:
 label >  - Browse folders and boot from files without writing a menu.
 label >  - Generate menu dynamically from custom template.
 label >  - Search across menu entries and show result as a menu.
-label > For more details, see: http://labs.aobac.net/boot/menu.html
 menu separator
 
 ######################################################################
