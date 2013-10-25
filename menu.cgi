@@ -175,11 +175,19 @@ sub genlist {
             $item->{uri}  = "$mcgi?q=$item->{path}";
         }
 	elsif ($name =~ /^(linux|vmlinux|vmlinuz|bzimage)(-\S+)?$/) {
-	    my $initrd = (grep { -f "$path/$_" && /^initrd.*$2\b/ } @file)[0];
-
             $item->{type}   = ':linux';
             $item->{uri}    = "$mcgi?q=$item->{path}";
-            $item->{initrd} = "$mcgi?q=$path/$initrd" if $initrd;
+
+	    my @initrd = grep { -f "$path/$_" && /^initrd.*$2\b/    } @file;
+            if (@initrd) {
+                $item->{initrd} = "$mcgi?q=$path/$initrd[0]";
+            }
+
+	    my @iramfs = grep { -f "$path/$_" && /^initramfs.*$2\b/ } @file;
+            if (@iramfs) {
+                $item->{type}   = ':linux-dracut';
+                $item->{initrd} = "$mcgi?q=$path/$iramfs[0]";
+            }
 	}
 	elsif (is_menu($item->{path})) {
             $item->{type} = ':menu';
@@ -395,6 +403,17 @@ label <%= $item->{name} %>
   kernel <%= $item->{uri} %>
   initrd <%= $item->{initrd} %>
   append panic=30 console=tty0 console=ttyS0,115200 root=/dev/nfs rw ip=dhcp nfsroot=<%= $ENV{HTTP_HOST} %>:/n/
+<% } %>
+
+<% foreach my $item (grep { $_->{type} eq ':linux-dracut' } @$LIST) { %>
+label <%= $item->{name} %>
+  kernel <%= $item->{uri} %>
+  initrd <%= $item->{initrd} %>
+<% if ($item->{uri} =~ m|\b(n/[^/]+)|) { %>
+  append console=tty0 console=ttyS0,115200 ip=dhcp root=nfs:<%= $ENV{HTTP_HOST} %>:/<%= $1 %>:rw,tcp,soft,intr,vers=3
+<% } else { %>
+  append console=tty0 console=ttyS0,115200 ro root=/dev/ram
+<% } %>
 <% } %>
 
 <% foreach my $item (grep { $_->{type} eq 'img' } @$LIST) { %>
